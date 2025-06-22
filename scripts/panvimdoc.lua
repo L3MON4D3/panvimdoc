@@ -301,7 +301,7 @@ Writer.Block.Para = function(el)
       break
     end
     if word:sub(1,1) == "`" and word:sub(2,2) ~= "`" then
-      from, to, word = s:find("(%`[^`]+%`)", from)
+      from, to, word = s:find("(%`[^`]+%`[^%s]*)", from)
       if not from then
         error("No matching apostrophe found in paragraph |" .. s .. "|")
       end
