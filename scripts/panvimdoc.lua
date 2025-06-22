@@ -275,7 +275,7 @@ Writer.Block.Header = function(el)
             :gsub("%s", "-")
           )
       end
-      padding = string.rep(" ", 78 - #left - #right)
+      padding = string.rep(" ", math.max(78 - #left - #right, 1))
       local r = string.format("%s%s%s", left, padding, right)
       return "\n" .. r .. "\n\n"
     else
