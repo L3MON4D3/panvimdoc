@@ -293,7 +293,19 @@ Writer.Block.Para = function(el)
   local s = inlines(el.content)
   local t = {}
   local current_line = ""
-  for word in string.gmatch(s, "([^%s]+)") do
+  local s_handled_to = 0
+  while true do
+    local from, to, word = s:find("([^%s]+)", s_handled_to + 1)
+    if not from then
+      -- no match found -> break.
+      break
+    end
+    if word:sub(1,1) == "`" and word:sub(2,2) ~= "`" then
+      from, to, word = s:find("(%`[^`]+%`)", from)
+      if not from then
+        error("No matching apostrophe found in paragraph |" .. s .. "|")
+      end
+    end
     if string.match(word, "[.]") and #word == 1 then
       current_line = current_line .. word
     elseif (#current_line + #word) > 78 then
@@ -304,6 +316,7 @@ Writer.Block.Para = function(el)
     else
       current_line = current_line .. " " .. word
     end
+    s_handled_to = to
   end
   table.insert(t, current_line)
   return table.concat(t, "\n") .. "\n\n"
