@@ -49,6 +49,10 @@ end
 
 Writer = pandoc.scaffolding.Writer
 
+local function to_str(inline)
+  return Writer[pandoc.utils.type(inline)][inline.tag](inline)
+end
+
 local function inlines(ils)
   local buff = {}
   for i = 1, #ils do
@@ -289,37 +293,56 @@ Writer.Block.Header = function(el)
   end
 end
 
-Writer.Block.Para = function(el)
-  local s = inlines(el.content)
-  local t = {}
+Writer.Block.Para = function(para_el)
+  local lines = {}
   local current_line = ""
-  local s_handled_to = 0
+
+  local i = 1
   while true do
-    local from, to, word = s:find("([^%s]+)", s_handled_to + 1)
-    if not from then
-      -- no match found -> break.
-      break
+    local word = ""
+    while true do
+      local el = para_el.content[i]
+      if not el then
+        -- word is complete.
+        break
+      end
+      local part = to_str(el)
+      if part:match("^%s*$") then
+        break
+      end
+      word = word .. part
+      i = i+1
     end
-    if word:sub(1,1) == "`" and word:sub(2,2) ~= "`" then
-      from, to, word = s:find("(%`[^`]+%`[^%s]*)", from)
-      if not from then
-        error("No matching apostrophe found in paragraph |" .. s .. "|")
+
+    if word ~= "" then
+      if (#current_line + #word) > 78 then
+        table.insert(lines, current_line)
+        current_line = word
+      elseif #current_line == 0 then
+        current_line = word
+      else
+        current_line = current_line .. " " .. word
       end
     end
-    if string.match(word, "[.]") and #word == 1 then
-      current_line = current_line .. word
-    elseif (#current_line + #word) > 78 then
-      table.insert(t, current_line)
-      current_line = word
-    elseif #current_line == 0 then
-      current_line = word
-    else
-      current_line = current_line .. " " .. word
+
+    -- check if splitting element needs special handling.
+    local el = para_el.content[i]
+    if not el then
+      break
     end
-    s_handled_to = to
+
+    if el.tag == "LineBreak" then
+      -- hard line break, begin new line.
+      table.insert(lines, current_line)
+      current_line = ""
+    end
+    i = i+1
   end
-  table.insert(t, current_line)
-  return table.concat(t, "\n") .. "\n\n"
+
+  if current_line ~= "" then
+    table.insert(lines, current_line)
+  end
+  return table.concat(lines, "\n") .. "\n\n"
 end
 
 Writer.Block.OrderedList = function(items)
