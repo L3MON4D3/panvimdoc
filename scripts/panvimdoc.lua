@@ -510,7 +510,7 @@ Writer.Inline.Link = function(el)
   elseif string.starts_with(s, "http") then
     return "<" .. s .. ">"
   else
-    return s .. " <" .. tgt .. ">"
+    return "[" .. s .."](" .. tgt .. ")"
   end
 end
 
