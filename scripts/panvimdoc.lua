@@ -254,7 +254,7 @@ Writer.Block.Header = function(el)
   end
   if lev == 4 then
     if DOC_MAPPING then
-      left = s
+      left = "`" .. s .."`"
       if attr.attributes.doc then
         right = "*" .. attr.attributes.doc .. "*"
       elseif DOC_MAPPING_PROJECT then
