@@ -358,7 +358,7 @@ end
 Writer.Block.BulletList = function(items)
   local buffer = {}
   items.content:map(function(item)
-    table.insert(buffer, indent(blocks(item, "\n"), "- ", "    "))
+    table.insert(buffer, indent(blocks(item, "\n"), "- ", "  "))
   end)
   return table.concat(buffer, "\n") .. "\n\n"
 end
